@@ -2,19 +2,17 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
-export interface Post {
-  'id' : bigint,
-  'title' : string,
-  'body' : string,
-  'author' : string,
-  'timestamp' : Time,
+export interface Game {
+  'date' : string,
+  'time' : string,
+  'week' : bigint,
+  'isHome' : boolean,
+  'opponent' : Team,
 }
-export type Result = { 'ok' : bigint } |
-  { 'err' : string };
-export type Time = bigint;
+export type Team = string;
 export interface _SERVICE {
-  'createPost' : ActorMethod<[string, string, string], Result>,
-  'getPosts' : ActorMethod<[], Array<Post>>,
+  'generateSchedule' : ActorMethod<[Team], Array<Game>>,
+  'getTeams' : ActorMethod<[], Array<Team>>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

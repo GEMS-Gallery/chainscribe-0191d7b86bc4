@@ -1,12 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crypto Blog</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Team Schedule - 2024 Season</title>
+    <style>
+        :root {
+            --primary-color: #013369;
+            --secondary-color: #D50A0A;
+            --background-color: #F5F5F5;
+            --text-color: #4A4A4A;
+            --border-color: #E0E0E0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .game-week {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .week-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .game {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .game:last-child {
+            border-bottom: none;
+        }
+        
+        .team {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 1rem;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .team-name {
+            font-weight: 500;
+        }
+        
+        .game-info {
+            text-align: center;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+        
+        @media (max-width: 600px) {
+            .game {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .team {
+                margin-bottom: 0.5rem;
+            }
+            
+            .game-info {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NFL Team Schedule - 2024 Season</h1>
+        <select id="team-select">
+            <option value="">Select a team</option>
+        </select>
+        <div id="schedule"></div>
+    </div>
+
+    <script src="https://sdk.dfinity.org/js/dfinity.js"></script>
+    <script>
+        const teamLogos = {
+            "Arizona Cardinals": "https://static.www.nfl.com/image/private/f_auto/league/u9fltoslqdsyao8cpm0k",
+            "Atlanta Falcons": "https://static.www.nfl.com/image/private/f_auto/league/d8m7hzpsbrl6pnqht8op",
+            "Baltimore Ravens": "https://static.www.nfl.com/image/private/f_auto/league/ucsdijmddsqcj1i9tddd",
+            "Buffalo Bills": "https://static.www.nfl.com/image/private/f_auto/league/giphcy6ie9mxbnldntsf",
+            "Carolina Panthers": "https://static.www.nfl.com/image/private/f_auto/league/ervfzgrqdpnc7lh5gqwq",
+            "Chicago Bears": "https://static.www.nfl.com/image/private/f_auto/league/ra0poq2ivwyahbaq86d2",
+            "Cincinnati Bengals": "https://static.www.nfl.com/image/private/f_auto/league/okxpteoliyayufypqalq",
+            "Cleveland Browns": "https://static.www.nfl.com/image/private/f_auto/league/fgbn8acp4opvyxk13dcy",
+            "Dallas Cowboys": "https://static.www.nfl.com/image/private/f_auto/league/ieid8hoygzdlmzo0tnf6",
+            "Denver Broncos": "https://static.www.nfl.com/image/private/f_auto/league/t0p7m5cjdjy18rnzzqbx",
+            "Detroit Lions": "https://static.www.nfl.com/image/private/f_auto/league/ocvxwnapdvwevupe4tpr",
+            "Green Bay Packers": "https://static.www.nfl.com/image/private/f_auto/league/gppfvr7n8gljgjaqux2x",
+            "Houston Texans": "https://static.www.nfl.com/image/private/f_auto/league/bpx88i8nw4nnabuq0oob",
+            "Indianapolis Colts": "https://static.www.nfl.com/image/private/f_auto/league/ketwqeuschqzjsllbid5",
+            "Jacksonville Jaguars": "https://static.www.nfl.com/image/private/f_auto/league/qycbib6ivrm9dqaexryk",
+            "Kansas City Chiefs": "https://static.www.nfl.com/image/private/f_auto/league/ujshjqvmnxce8m4obmvs",
+            "Las Vegas Raiders": "https://static.www.nfl.com/image/private/f_auto/league/gzcojbzcyjgubgyb6xf2",
+            "Los Angeles Chargers": "https://static.www.nfl.com/image/private/f_auto/league/ayvwcmluj2ohkdlbiegi",
+            "Los Angeles Rams": "https://static.www.nfl.com/image/private/f_auto/league/ayvwcmluj2ohkdlbiegi",
+            "Miami Dolphins": "https://static.www.nfl.com/image/private/f_auto/league/lits6p8ycthy9to70bnt",
+            "Minnesota Vikings": "https://static.www.nfl.com/image/private/f_auto/league/teguylrnqqmfcwxvcmmz",
+            "New England Patriots": "https://static.www.nfl.com/image/private/f_auto/league/moyfxx3dq5pio4aiftnc",
+            "New Orleans Saints": "https://static.www.nfl.com/image/private/f_auto/league/grhjkahghjkk17v43hdx",
+            "New York Giants": "https://static.www.nfl.com/image/private/f_auto/league/t6mhdmgizi6qhndh8b9p",
+            "New York Jets": "https://static.www.nfl.com/image/private/f_auto/league/ekijosiae96gektbo4iw",
+            "Philadelphia Eagles": "https://static.www.nfl.com/image/private/f_auto/league/puhrqgj71gobgdkdo6uq",
+            "Pittsburgh Steelers": "https://static.www.nfl.com/image/private/f_auto/league/xujg9t3t4u5nmjgr54wx",
+            "San Francisco 49ers": "https://static.www.nfl.com/image/private/f_auto/league/dxibuyxbk0b9ua5ih9hn",
+            "Seattle Seahawks": "https://static.www.nfl.com/image/private/f_auto/league/gcytzwpjdzbpwnwxincg",
+            "Tampa Bay Buccaneers": "https://static.www.nfl.com/image/private/f_auto/league/v8uqiualryypwqgvwcih",
+            "Tennessee Titans": "https://static.www.nfl.com/image/private/f_auto/league/pln44vuzugjgipyidsre",
+            "Washington Commanders": "https://static.www.nfl.com/image/private/f_auto/league/xymxwrxtyj9fhaemhdyd"
+        };
+
+        let canister;
+        let teams = [];
+
+        async function init() {
+            canister = await dfinity.Actor.createActor(canisterId);
+            teams = await canister.getTeams();
+            populateTeamSelect();
+        }
+
+        function populateTeamSelect() {
+            const select = document.getElementById('team-select');
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team;
+                option.textContent = team;
+                select.appendChild(option);
+            });
+        }
+
+        async function displaySchedule(team) {
+            const scheduleDiv = document.getElementById('schedule');
+            scheduleDiv.innerHTML = '';
+
+            if (!team) {
+                scheduleDiv.textContent = 'Please select a team to view their schedule.';
+                return;
+            }
+
+            const teamSchedule = await canister.generateSchedule(team);
+            
+            teamSchedule.forEach(game => {
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'game-week';
+                
+                const weekHeader = document.createElement('div');
+                weekHeader.className = 'week-header';
+                weekHeader.textContent = `Week ${game.week} - ${formatDisplayDate(game.date)}`;
+                weekDiv.appendChild(weekHeader);
+                
+                if (game.opponent === "BYE") {
+                    const byeDiv = document.createElement('div');
+                    byeDiv.className = 'game';
+                    byeDiv.textContent = 'BYE WEEK';
+                    weekDiv.appendChild(byeDiv);
+                } else {
+                    const gameDiv = document.createElement('div');
+                    gameDiv.className = 'game';
+                    const homeTeam = game.isHome ? team : game.opponent;
+                    const awayTeam = game.isHome ? game.opponent : team;
+                    gameDiv.innerHTML = `
+                        <div class="team">
+                            <div class="team-logo" style="background-image: url('${teamLogos[homeTeam]}');"></div>
+                            <div class="team-name">${homeTeam}</div>
+                        </div>
+                        <div class="game-info">
+                            <div>${game.time}</div>
+                            <div>vs</div>
+                        </div>
+                        <div class="team">
+                            <div class="team-logo" style="background-image: url('${teamLogos[awayTeam]}');"></div>
+                            <div class="team-name">${awayTeam}</div>
+                        </div>
+                    `;
+                    weekDiv.appendChild(gameDiv);
+                }
+                
+                scheduleDiv.appendChild(weekDiv);
+            });
+        }
+
+        function formatDisplayDate(dateString) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(Number(dateString) / 1000000).toLocaleDateString('en-US', options);
+        }
+
+        document.getElementById('team-select').addEventListener('change', (event) => {
+            displaySchedule(event.target.value);
+        });
+
+        init();
+    </script>
+</body>
 </html>

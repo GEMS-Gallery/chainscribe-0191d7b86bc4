@@ -1,16 +1,15 @@
 export const idlFactory = ({ IDL }) => {
-  const Result = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
-  const Time = IDL.Int;
-  const Post = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Text,
-    'body' : IDL.Text,
-    'author' : IDL.Text,
-    'timestamp' : Time,
+  const Team = IDL.Text;
+  const Game = IDL.Record({
+    'date' : IDL.Text,
+    'time' : IDL.Text,
+    'week' : IDL.Nat,
+    'isHome' : IDL.Bool,
+    'opponent' : Team,
   });
   return IDL.Service({
-    'createPost' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [Result], []),
-    'getPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'generateSchedule' : IDL.Func([Team], [IDL.Vec(Game)], []),
+    'getTeams' : IDL.Func([], [IDL.Vec(Team)], ['query']),
   });
 };
 export const init = ({ IDL }) => { return []; };

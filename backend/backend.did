@@ -1,18 +1,13 @@
-type Time = int;
-type Result = 
- variant {
-   err: text;
-   ok: nat;
- };
-type Post = 
+type Team = text;
+type Game = 
  record {
-   author: text;
-   body: text;
-   id: nat;
-   timestamp: Time;
-   title: text;
+   date: text;
+   isHome: bool;
+   opponent: Team;
+   time: text;
+   week: nat;
  };
 service : {
-  createPost: (text, text, text) -> (Result);
-  getPosts: () -> (vec Post) query;
+  generateSchedule: (Team) -> (vec Game);
+  getTeams: () -> (vec Team) query;
 }
