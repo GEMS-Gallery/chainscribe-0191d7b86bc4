@@ -108,11 +108,11 @@
     <script>
         const teams = [
             "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC",
-            "LA", "LAC", "LV", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"
+            "LAR", "LAC", "LV", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"
         ];
 
         async function fetchNFLData() {
-            const url = `https://raw.githubusercontent.com/nflverse/nflverse-data/master/data/games.csv`;
+            const url = `https://github.com/nflverse/nfldata/raw/master/data/games.csv`;
 
             try {
                 const response = await fetch(url);
@@ -186,7 +186,7 @@
                     </div>
                     <div class="game-info">
                         Week ${game.week} | ${new Date(game.gameday).toLocaleDateString()} | 
-                        ${isHomeTeam ? 'Home' : 'Away'} | ${game.gametime} ${game.gametime_timezone}
+                        ${isHomeTeam ? 'Home' : 'Away'} | ${game.gametime || 'Time TBA'}
                     </div>
                 `;
                 container.appendChild(gameElement);
