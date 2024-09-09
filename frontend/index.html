@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFL Team Schedule - 2024 Season</title>
+    <title>NFL Schedule Viewer</title>
     <style>
         :root {
             --primary-color: #013369;
@@ -23,7 +23,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         
@@ -45,165 +45,98 @@
             background-color: white;
         }
         
-        .game-week {
+        #schedule-container {
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
             margin-bottom: 2rem;
-            overflow: hidden;
         }
         
-        .week-header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem;
-            font-weight: bold;
+        .loading {
+            text-align: center;
             font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        
+        .error {
+            color: var(--secondary-color);
+            font-weight: bold;
         }
         
         .game {
-            display: flex;
-            align-items: center;
-            padding: 1.5rem;
             border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
         }
         
         .game:last-child {
             border-bottom: none;
         }
         
-        .team {
-            flex: 1;
+        .game-details {
             display: flex;
+            justify-content: space-between;
             align-items: center;
         }
         
-        .team-logo {
-            width: 50px;
-            height: 50px;
-            margin-right: 1rem;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .team {
+            font-weight: bold;
         }
         
-        .team-name {
-            font-weight: 500;
+        .score {
+            font-size: 1.2rem;
         }
         
         .game-info {
-            text-align: center;
-            font-weight: 500;
-            color: var(--secondary-color);
-        }
-        
-        @media (max-width: 600px) {
-            .game {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .team {
-                margin-bottom: 0.5rem;
-            }
-            
-            .game-info {
-                align-self: flex-end;
-            }
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-color);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>NFL Team Schedule - 2024 Season</h1>
+        <h1>NFL Schedule Viewer</h1>
         <select id="team-select">
             <option value="">Select a team</option>
         </select>
-        <div id="schedule"></div>
+        <div id="schedule-container">
+            <p class="loading">Loading NFL data...</p>
+        </div>
     </div>
 
     <script>
         const teams = [
-            "Arizona Cardinals", "Atlanta Falcons", "Baltimore Ravens", "Buffalo Bills",
-            "Carolina Panthers", "Chicago Bears", "Cincinnati Bengals", "Cleveland Browns",
-            "Dallas Cowboys", "Denver Broncos", "Detroit Lions", "Green Bay Packers",
-            "Houston Texans", "Indianapolis Colts", "Jacksonville Jaguars", "Kansas City Chiefs",
-            "Las Vegas Raiders", "Los Angeles Chargers", "Los Angeles Rams", "Miami Dolphins",
-            "Minnesota Vikings", "New England Patriots", "New Orleans Saints", "New York Giants",
-            "New York Jets", "Philadelphia Eagles", "Pittsburgh Steelers", "San Francisco 49ers",
-            "Seattle Seahawks", "Tampa Bay Buccaneers", "Tennessee Titans", "Washington Commanders"
+            "ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", "DAL", "DEN", "DET", "GB", "HOU", "IND", "JAX", "KC",
+            "LA", "LAC", "LV", "MIA", "MIN", "NE", "NO", "NYG", "NYJ", "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WAS"
         ];
 
-        const teamLogos = {
-            "Arizona Cardinals": "https://static.www.nfl.com/image/private/f_auto/league/u9fltoslqdsyao8cpm0k",
-            "Atlanta Falcons": "https://static.www.nfl.com/image/private/f_auto/league/d8m7hzpsbrl6pnqht8op",
-            "Baltimore Ravens": "https://static.www.nfl.com/image/private/f_auto/league/ucsdijmddsqcj1i9tddd",
-            "Buffalo Bills": "https://static.www.nfl.com/image/private/f_auto/league/giphcy6ie9mxbnldntsf",
-            "Carolina Panthers": "https://static.www.nfl.com/image/private/f_auto/league/ervfzgrqdpnc7lh5gqwq",
-            "Chicago Bears": "https://static.www.nfl.com/image/private/f_auto/league/ra0poq2ivwyahbaq86d2",
-            "Cincinnati Bengals": "https://static.www.nfl.com/image/private/f_auto/league/okxpteoliyayufypqalq",
-            "Cleveland Browns": "https://static.www.nfl.com/image/private/f_auto/league/fgbn8acp4opvyxk13dcy",
-            "Dallas Cowboys": "https://static.www.nfl.com/image/private/f_auto/league/ieid8hoygzdlmzo0tnf6",
-            "Denver Broncos": "https://static.www.nfl.com/image/private/f_auto/league/t0p7m5cjdjy18rnzzqbx",
-            "Detroit Lions": "https://static.www.nfl.com/image/private/f_auto/league/ocvxwnapdvwevupe4tpr",
-            "Green Bay Packers": "https://static.www.nfl.com/image/private/f_auto/league/gppfvr7n8gljgjaqux2x",
-            "Houston Texans": "https://static.www.nfl.com/image/private/f_auto/league/bpx88i8nw4nnabuq0oob",
-            "Indianapolis Colts": "https://static.www.nfl.com/image/private/f_auto/league/ketwqeuschqzjsllbid5",
-            "Jacksonville Jaguars": "https://static.www.nfl.com/image/private/f_auto/league/qycbib6ivrm9dqaexryk",
-            "Kansas City Chiefs": "https://static.www.nfl.com/image/private/f_auto/league/ujshjqvmnxce8m4obmvs",
-            "Las Vegas Raiders": "https://static.www.nfl.com/image/private/f_auto/league/gzcojbzcyjgubgyb6xf2",
-            "Los Angeles Chargers": "https://static.www.nfl.com/image/private/f_auto/league/ayvwcmluj2ohkdlbiegi",
-            "Los Angeles Rams": "https://static.www.nfl.com/image/private/f_auto/league/ayvwcmluj2ohkdlbiegi",
-            "Miami Dolphins": "https://static.www.nfl.com/image/private/f_auto/league/lits6p8ycthy9to70bnt",
-            "Minnesota Vikings": "https://static.www.nfl.com/image/private/f_auto/league/teguylrnqqmfcwxvcmmz",
-            "New England Patriots": "https://static.www.nfl.com/image/private/f_auto/league/moyfxx3dq5pio4aiftnc",
-            "New Orleans Saints": "https://static.www.nfl.com/image/private/f_auto/league/grhjkahghjkk17v43hdx",
-            "New York Giants": "https://static.www.nfl.com/image/private/f_auto/league/t6mhdmgizi6qhndh8b9p",
-            "New York Jets": "https://static.www.nfl.com/image/private/f_auto/league/ekijosiae96gektbo4iw",
-            "Philadelphia Eagles": "https://static.www.nfl.com/image/private/f_auto/league/puhrqgj71gobgdkdo6uq",
-            "Pittsburgh Steelers": "https://static.www.nfl.com/image/private/f_auto/league/xujg9t3t4u5nmjgr54wx",
-            "San Francisco 49ers": "https://static.www.nfl.com/image/private/f_auto/league/dxibuyxbk0b9ua5ih9hn",
-            "Seattle Seahawks": "https://static.www.nfl.com/image/private/f_auto/league/gcytzwpjdzbpwnwxincg",
-            "Tampa Bay Buccaneers": "https://static.www.nfl.com/image/private/f_auto/league/v8uqiualryypwqgvwcih",
-            "Tennessee Titans": "https://static.www.nfl.com/image/private/f_auto/league/pln44vuzugjgipyidsre",
-            "Washington Commanders": "https://static.www.nfl.com/image/private/f_auto/league/xymxwrxtyj9fhaemhdyd"
-        };
+        async function fetchNFLData() {
+            const url = `https://raw.githubusercontent.com/nflverse/nflverse-data/master/data/games.csv`;
 
-        function generateSchedule() {
-            const schedule = {};
-            const startDate = new Date(2024, 8, 5); // September 5, 2024
-
-            teams.forEach(team => {
-                schedule[team] = [];
-                let teamSchedule = schedule[team];
-                let currentDate = new Date(startDate);
-
-                for (let week = 1; week <= 18; week++) {
-                    if (week === 10) {  // Bye week (simplified - in reality, bye weeks vary)
-                        teamSchedule.push({ week, date: formatDate(currentDate), opponent: "BYE", isHome: null });
-                    } else {
-                        let opponent;
-                        do {
-                            opponent = teams[Math.floor(Math.random() * teams.length)];
-                        } while (opponent === team);
-
-                        const isHome = Math.random() < 0.5;
-                        const time = isHome ? "13:00" : "16:25";  // Simplified time assignment
-
-                        teamSchedule.push({ week, date: formatDate(currentDate), time, opponent, isHome });
-                    }
-
-                    currentDate.setDate(currentDate.getDate() + 7);  // Move to next week
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            });
-
-            return schedule;
+                const csvText = await response.text();
+                return parseCSV(csvText);
+            } catch (error) {
+                console.error('Error fetching NFL data:', error);
+                return null;
+            }
         }
 
-        const schedule = generateSchedule();
-
-        function formatDate(date) {
-            return date.toISOString().split('T')[0];
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',');
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                return headers.reduce((obj, header, index) => {
+                    obj[header] = values[index];
+                    return obj;
+                }, {});
+            });
         }
 
         function populateTeamSelect() {
@@ -216,68 +149,64 @@
             });
         }
 
-        function displaySchedule(team) {
-            const scheduleDiv = document.getElementById('schedule');
-            scheduleDiv.innerHTML = '';
+        function displaySchedule(team, data) {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = '';
 
-            if (!team || !schedule[team]) {
-                scheduleDiv.textContent = 'Please select a team to view their schedule.';
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="error">No NFL data available at the moment.</p>';
                 return;
             }
 
-            const teamSchedule = schedule[team];
-            
-            teamSchedule.forEach(game => {
-                const weekDiv = document.createElement('div');
-                weekDiv.className = 'game-week';
+            const currentYear = new Date().getFullYear();
+            let teamGames = data.filter(game => 
+                (game.season === currentYear.toString() || game.season === (currentYear - 1).toString()) && 
+                (game.away_team === team || game.home_team === team)
+            );
+
+            if (teamGames.length === 0) {
+                container.innerHTML = '<p class="error">No games found for the selected team.</p>';
+                return;
+            }
+
+            teamGames.forEach(game => {
+                const gameElement = document.createElement('div');
+                gameElement.className = 'game';
+                const isHomeTeam = game.home_team === team;
+                const opponent = isHomeTeam ? game.away_team : game.home_team;
+                const score = game.home_score && game.away_score 
+                    ? `${game.away_score} - ${game.home_score}`
+                    : 'Not started';
                 
-                const weekHeader = document.createElement('div');
-                weekHeader.className = 'week-header';
-                weekHeader.textContent = `Week ${game.week} - ${formatDisplayDate(game.date)}`;
-                weekDiv.appendChild(weekHeader);
-                
-                if (game.opponent === "BYE") {
-                    const byeDiv = document.createElement('div');
-                    byeDiv.className = 'game';
-                    byeDiv.textContent = 'BYE WEEK';
-                    weekDiv.appendChild(byeDiv);
-                } else {
-                    const gameDiv = document.createElement('div');
-                    gameDiv.className = 'game';
-                    const homeTeam = game.isHome ? team : game.opponent;
-                    const awayTeam = game.isHome ? game.opponent : team;
-                    gameDiv.innerHTML = `
-                        <div class="team">
-                            <div class="team-logo" style="background-image: url('${teamLogos[homeTeam]}');"></div>
-                            <div class="team-name">${homeTeam}</div>
-                        </div>
-                        <div class="game-info">
-                            <div>${game.time}</div>
-                            <div>vs</div>
-                        </div>
-                        <div class="team">
-                            <div class="team-logo" style="background-image: url('${teamLogos[awayTeam]}');"></div>
-                            <div class="team-name">${awayTeam}</div>
-                        </div>
-                    `;
-                    weekDiv.appendChild(gameDiv);
-                }
-                
-                scheduleDiv.appendChild(weekDiv);
+                gameElement.innerHTML = `
+                    <div class="game-details">
+                        <span class="team">${team}</span>
+                        <span class="score">${score}</span>
+                        <span class="team">${opponent}</span>
+                    </div>
+                    <div class="game-info">
+                        Week ${game.week} | ${new Date(game.gameday).toLocaleDateString()} | 
+                        ${isHomeTeam ? 'Home' : 'Away'} | ${game.gametime} ${game.gametime_timezone}
+                    </div>
+                `;
+                container.appendChild(gameElement);
             });
         }
 
-        function formatDisplayDate(dateString) {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
+        async function initializeNFLData() {
+            populateTeamSelect();
+            const nflData = await fetchNFLData();
+            if (nflData) {
+                document.getElementById('team-select').addEventListener('change', (event) => {
+                    displaySchedule(event.target.value, nflData);
+                });
+            } else {
+                document.getElementById('schedule-container').innerHTML = '<p class="error">Failed to load NFL data. Please try again later.</p>';
+            }
         }
 
-        document.getElementById('team-select').addEventListener('change', (event) => {
-            displaySchedule(event.target.value);
-        });
-
-        populateTeamSelect();
-        displaySchedule('');
+        // Initialize the NFL data when the page loads
+        initializeNFLData();
     </script>
 </body>
 </html>

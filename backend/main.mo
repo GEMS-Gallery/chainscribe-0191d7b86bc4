@@ -1,1 +1,1 @@
-// This file is now obsolete and can be removed or left empty
+// This file is now obsolete and can be removed
