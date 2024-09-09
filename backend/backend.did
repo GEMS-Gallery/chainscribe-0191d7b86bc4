@@ -1,13 +1,1 @@
-type Team = text;
-type Game = 
- record {
-   date: text;
-   isHome: bool;
-   opponent: Team;
-   time: text;
-   week: nat;
- };
-service : {
-  generateSchedule: (Team) -> (vec Game);
-  getTeams: () -> (vec Team) query;
-}
+

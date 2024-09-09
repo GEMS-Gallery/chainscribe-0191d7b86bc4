@@ -122,8 +122,18 @@
         <div id="schedule"></div>
     </div>
 
-    <script src="https://sdk.dfinity.org/js/dfinity.js"></script>
     <script>
+        const teams = [
+            "Arizona Cardinals", "Atlanta Falcons", "Baltimore Ravens", "Buffalo Bills",
+            "Carolina Panthers", "Chicago Bears", "Cincinnati Bengals", "Cleveland Browns",
+            "Dallas Cowboys", "Denver Broncos", "Detroit Lions", "Green Bay Packers",
+            "Houston Texans", "Indianapolis Colts", "Jacksonville Jaguars", "Kansas City Chiefs",
+            "Las Vegas Raiders", "Los Angeles Chargers", "Los Angeles Rams", "Miami Dolphins",
+            "Minnesota Vikings", "New England Patriots", "New Orleans Saints", "New York Giants",
+            "New York Jets", "Philadelphia Eagles", "Pittsburgh Steelers", "San Francisco 49ers",
+            "Seattle Seahawks", "Tampa Bay Buccaneers", "Tennessee Titans", "Washington Commanders"
+        ];
+
         const teamLogos = {
             "Arizona Cardinals": "https://static.www.nfl.com/image/private/f_auto/league/u9fltoslqdsyao8cpm0k",
             "Atlanta Falcons": "https://static.www.nfl.com/image/private/f_auto/league/d8m7hzpsbrl6pnqht8op",
@@ -159,13 +169,41 @@
             "Washington Commanders": "https://static.www.nfl.com/image/private/f_auto/league/xymxwrxtyj9fhaemhdyd"
         };
 
-        let canister;
-        let teams = [];
+        function generateSchedule() {
+            const schedule = {};
+            const startDate = new Date(2024, 8, 5); // September 5, 2024
 
-        async function init() {
-            canister = await dfinity.Actor.createActor(canisterId);
-            teams = await canister.getTeams();
-            populateTeamSelect();
+            teams.forEach(team => {
+                schedule[team] = [];
+                let teamSchedule = schedule[team];
+                let currentDate = new Date(startDate);
+
+                for (let week = 1; week <= 18; week++) {
+                    if (week === 10) {  // Bye week (simplified - in reality, bye weeks vary)
+                        teamSchedule.push({ week, date: formatDate(currentDate), opponent: "BYE", isHome: null });
+                    } else {
+                        let opponent;
+                        do {
+                            opponent = teams[Math.floor(Math.random() * teams.length)];
+                        } while (opponent === team);
+
+                        const isHome = Math.random() < 0.5;
+                        const time = isHome ? "13:00" : "16:25";  // Simplified time assignment
+
+                        teamSchedule.push({ week, date: formatDate(currentDate), time, opponent, isHome });
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 7);  // Move to next week
+                }
+            });
+
+            return schedule;
+        }
+
+        const schedule = generateSchedule();
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
         }
 
         function populateTeamSelect() {
@@ -178,16 +216,16 @@
             });
         }
 
-        async function displaySchedule(team) {
+        function displaySchedule(team) {
             const scheduleDiv = document.getElementById('schedule');
             scheduleDiv.innerHTML = '';
 
-            if (!team) {
+            if (!team || !schedule[team]) {
                 scheduleDiv.textContent = 'Please select a team to view their schedule.';
                 return;
             }
 
-            const teamSchedule = await canister.generateSchedule(team);
+            const teamSchedule = schedule[team];
             
             teamSchedule.forEach(game => {
                 const weekDiv = document.createElement('div');
@@ -231,14 +269,15 @@
 
         function formatDisplayDate(dateString) {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            return new Date(Number(dateString) / 1000000).toLocaleDateString('en-US', options);
+            return new Date(dateString).toLocaleDateString('en-US', options);
         }
 
         document.getElementById('team-select').addEventListener('change', (event) => {
             displaySchedule(event.target.value);
         });
 
-        init();
+        populateTeamSelect();
+        displaySchedule('');
     </script>
 </body>
 </html>
